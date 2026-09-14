@@ -1,0 +1,16 @@
+{
+  "name": "nuvera-spa",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=frontend",
+    "start": "npm run start --workspace=backend"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
