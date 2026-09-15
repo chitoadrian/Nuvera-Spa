@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import Icon from './Icon.jsx'
-import SectionHeading from './SectionHeading.jsx'
 
 function formatDate(value) {
   if (!value) return '—'
@@ -36,12 +35,11 @@ export default function ReservationsManager({
 
   return (
     <section id="gestion-reservas" className="section reservations-section">
-      <div className="container">
-        <SectionHeading
-          eyebrow="Agenda Nuvéra"
-          title="Gestión de reservas"
-          description="Consulta y administra el estado de las citas desde un mismo lugar."
-        />
+      <div>
+        <div className="reservations-section__heading">
+          <div><span>Agenda</span><h2>Reservas</h2></div>
+          <strong>{appointments.length} {appointments.length === 1 ? 'cita' : 'citas'}</strong>
+        </div>
 
         {message && (
           <div className={`manager-message manager-message--${message.type}`} role="status">
@@ -79,6 +77,7 @@ export default function ReservationsManager({
                 <tr>
                   <th>Cliente</th>
                   <th>Teléfono</th>
+                  <th>Correo</th>
                   <th>Servicio</th>
                   <th>Fecha</th>
                   <th>Hora</th>
@@ -95,6 +94,11 @@ export default function ReservationsManager({
                     <tr key={appointment.id}>
                       <td data-label="Cliente"><strong>{appointment.nombre_cliente}</strong></td>
                       <td data-label="Teléfono"><a className="reservation-phone" href={`tel:${appointment.telefono}`}>{appointment.telefono}</a></td>
+                      <td data-label="Correo">
+                        {appointment.correo_cliente
+                          ? <a className="reservation-email" href={`mailto:${appointment.correo_cliente}`}>{appointment.correo_cliente}</a>
+                          : <span className="reservation-email--empty">Sin registrar</span>}
+                      </td>
                       <td data-label="Servicio">{appointment.servicio}</td>
                       <td data-label="Fecha">{formatDate(appointment.fecha_cita)}</td>
                       <td data-label="Hora">{appointment.hora_cita?.slice(0, 5)}</td>

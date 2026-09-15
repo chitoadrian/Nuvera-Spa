@@ -6,11 +6,10 @@ const navLinks = [
   { label: 'Inicio', href: '#inicio' },
   { label: 'Servicios', href: '#servicios' },
   { label: 'Nosotros', href: '#nosotros' },
-  { label: 'Reservar cita', href: '#reservas' },
   { label: 'Contacto', href: '#contacto' },
 ]
 
-export default function Navbar({ isAdminView }) {
+export default function Navbar({ isStandaloneView }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -27,7 +26,7 @@ export default function Navbar({ isAdminView }) {
   }, [isOpen])
 
   return (
-    <header className={`navbar ${isScrolled || isAdminView ? 'navbar--scrolled' : ''}`}>
+    <header className={`navbar ${isScrolled || isStandaloneView ? 'navbar--scrolled' : ''}`}>
       <div className="navbar__inner container">
         <a className="brand brand--image" href="#inicio" aria-label="Nuvéra Spa, ir al inicio" onClick={() => setIsOpen(false)}>
           <img className="brand__logo" src={nuveraLogo} alt="Nuvéra Spa" width="1024" height="559" />
@@ -48,14 +47,12 @@ export default function Navbar({ isAdminView }) {
           {navLinks.map((link) => (
             <a
               key={link.href}
-              className={link.href === '#reservas' ? 'nav-cta' : ''}
               href={link.href}
               onClick={() => setIsOpen(false)}
             >
               {link.label}
             </a>
           ))}
-          <a className="nav-admin" href="#administracion" onClick={() => setIsOpen(false)}>Administración</a>
         </nav>
       </div>
     </header>

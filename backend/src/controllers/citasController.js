@@ -1,5 +1,6 @@
 import { DEFAULT_ROOM, SERVICE_PRICES } from '../config/services.js'
 import { getSupabaseClient, SupabaseConfigurationError } from '../db/supabase.js'
+import { sendAppointmentStatusEmail, sendNewAppointmentEmail } from '../services/emailService.js'
 import {
   parseAppointmentId,
   validateAppointmentUpdate,
@@ -10,6 +11,7 @@ const APPOINTMENT_COLUMNS = [
   'id',
   'nombre_cliente',
   'telefono',
+  'correo_cliente',
   'servicio',
   'fecha_cita',
   'hora_cita',
@@ -44,6 +46,17 @@ function sendDatabaseError(response, error, action) {
     ok: false,
     message: `No se pudo ${action} la cita. Intenta nuevamente.`,
   })
+}
+
+async function notifySafely(sendNotification, context) {
+  try {
+    const result = await sendNotification()
+    if (result.skipped) console.info(`Notificación de correo omitida: ${context}`)
+    return result
+  } catch (error) {
+    console.error(`No se pudo enviar la notificación de correo: ${context}`, error.message)
+    return { delivered: false, skipped: false }
+  }
 }
 
 export async function listarCitas(_request, response) {
@@ -91,7 +104,12 @@ export async function crearCita(request, response) {
 
     if (error) return sendDatabaseError(response, error, 'crear')
 
-    return response.status(201).json({ ok: true, data })
+    const emailNotification = await notifySafely(
+      () => sendNewAppointmentEmail(data),
+      'nueva reserva',
+    )
+
+    return response.status(201).json({ ok: true, data, emailNotification })
   } catch (error) {
     return sendDatabaseError(response, error, 'crear')
   }
@@ -117,6 +135,20 @@ export async function actualizarCita(request, response) {
 
   try {
     const supabase = getSupabaseClient()
+    let previousStatus
+
+    if (changes.estado) {
+      const { data: currentAppointment, error: lookupError } = await supabase
+        .from('citas')
+        .select('estado')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (lookupError) return sendDatabaseError(response, lookupError, 'consultar')
+      if (!currentAppointment) return response.status(404).json({ ok: false, message: 'Cita no encontrada.' })
+      previousStatus = currentAppointment.estado
+    }
+
     const { data, error } = await supabase
       .from('citas')
       .update(changes)
@@ -127,7 +159,21 @@ export async function actualizarCita(request, response) {
     if (error) return sendDatabaseError(response, error, 'actualizar')
     if (!data) return response.status(404).json({ ok: false, message: 'Cita no encontrada.' })
 
-    return response.status(200).json({ ok: true, data })
+    let emailNotification = { delivered: false, skipped: true }
+    const shouldNotifyStatus = (
+      changes.estado
+      && changes.estado !== previousStatus
+      && ['Confirmada', 'Cancelada'].includes(changes.estado)
+    )
+
+    if (shouldNotifyStatus) {
+      emailNotification = await notifySafely(
+        () => sendAppointmentStatusEmail(data),
+        `estado ${changes.estado.toLowerCase()}`,
+      )
+    }
+
+    return response.status(200).json({ ok: true, data, emailNotification })
   } catch (error) {
     return sendDatabaseError(response, error, 'actualizar')
   }

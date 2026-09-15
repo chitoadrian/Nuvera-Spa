@@ -1,4 +1,7 @@
 @media (max-width: 1060px) {
+  .admin-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .services-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
@@ -107,11 +110,6 @@
     font-size: 0.95rem;
   }
 
-  .navbar__nav .nav-admin {
-    font-family: var(--sans);
-    font-size: 0.9rem !important;
-  }
-
   .hero {
     min-height: max(680px, 100svh);
   }
@@ -169,6 +167,58 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
+  }
+
+  .admin-page--dashboard {
+    padding-top: 74px;
+  }
+
+  .admin-dashboard {
+    display: block;
+    min-height: calc(100vh - 74px);
+  }
+
+  .admin-sidebar {
+    position: static;
+    display: grid;
+    height: auto;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 24px;
+    padding: 18px;
+  }
+
+  .admin-sidebar__brand {
+    width: 104px;
+    height: 60px;
+    margin: 0;
+  }
+
+  .admin-sidebar__brand img {
+    width: 164px;
+  }
+
+  .admin-sidebar nav {
+    display: flex;
+  }
+
+  .admin-sidebar__session {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .admin-sidebar__session span,
+  .admin-sidebar__session strong {
+    display: none;
+  }
+
+  .admin-sidebar__session button {
+    margin: 0;
+  }
+
+  .admin-dashboard__content {
+    padding: 38px 24px 60px;
   }
 
   .reservations-table,
@@ -233,12 +283,7 @@
   }
 
   .gallery-grid {
-    grid-auto-rows: 210px;
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .gallery-item--wide {
-    grid-column: span 1;
   }
 
   .contact__details {
@@ -376,6 +421,18 @@
     padding-top: 96px;
   }
 
+  .booking-page {
+    padding-top: 98px;
+  }
+
+  .page-back-link {
+    margin-left: 20px;
+  }
+
+  .booking-section--standalone {
+    padding-top: 42px;
+  }
+
   .admin-back-link {
     margin-left: 20px;
   }
@@ -386,17 +443,46 @@
     padding: 34px 23px;
   }
 
-  .admin-toolbar {
-    align-items: stretch;
+  .admin-page--dashboard {
+    padding-top: 74px;
+  }
+
+  .admin-sidebar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .admin-sidebar__brand {
+    display: none;
+  }
+
+  .admin-sidebar nav a {
+    padding: 9px 10px;
+  }
+
+  .admin-sidebar nav a span {
+    display: none;
+  }
+
+  .admin-dashboard__content {
+    padding: 32px 14px 50px;
+  }
+
+  .admin-dashboard__header {
+    align-items: flex-start;
     flex-direction: column;
+    gap: 16px;
   }
 
-  .admin-toolbar .button {
-    width: 100%;
+  .admin-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-page .reservations-section {
-    padding-top: 58px;
+  .admin-stats article {
+    padding: 17px;
+  }
+
+  .admin-stats article:last-child {
+    grid-column: 1 / -1;
   }
 
   .reservations-table tr {
@@ -422,14 +508,7 @@
   }
 
   .gallery-grid {
-    grid-auto-rows: 230px;
     grid-template-columns: 1fr;
-  }
-
-  .gallery-item--tall,
-  .gallery-item--wide {
-    grid-row: span 1;
-    grid-column: span 1;
   }
 
   .contact-section {

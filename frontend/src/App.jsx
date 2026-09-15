@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminPortal from './components/AdminPortal.jsx'
 import About from './components/About.jsx'
 import Benefits from './components/Benefits.jsx'
-import BookingForm from './components/BookingForm.jsx'
+import BookingPage from './components/BookingPage.jsx'
 import Contact from './components/Contact.jsx'
 import Footer from './components/Footer.jsx'
 import Gallery from './components/Gallery.jsx'
@@ -14,7 +14,9 @@ import { getApiHealth } from './services/api.js'
 export default function App() {
   const [selectedService, setSelectedService] = useState('')
   const [apiStatus, setApiStatus] = useState('loading')
-  const [isAdminView, setIsAdminView] = useState(() => window.location.hash === '#administracion')
+  const [currentView, setCurrentView] = useState(() => getViewFromHash())
+
+  const isStandaloneView = currentView !== 'site'
 
   useEffect(() => {
     const controller = new AbortController()
@@ -34,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      setIsAdminView(window.location.hash === '#administracion')
+      setCurrentView(getViewFromHash())
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
@@ -44,29 +46,36 @@ export default function App() {
 
   function reserveService(serviceName) {
     setSelectedService(serviceName)
-    document.querySelector('#reservas')?.scrollIntoView({ behavior: 'smooth' })
+    window.location.hash = '#reservar'
   }
 
   return (
     <>
       <a className="skip-link" href="#contenido-principal">Saltar al contenido</a>
-      <Navbar isAdminView={isAdminView} />
+      <Navbar isStandaloneView={isStandaloneView} />
       <main id="contenido-principal">
-        {isAdminView ? (
+        {currentView === 'admin' ? (
           <AdminPortal />
+        ) : currentView === 'booking' ? (
+          <BookingPage preselectedService={selectedService} />
         ) : (
           <>
             <Hero />
             <Services onReserve={reserveService} />
             <About />
             <Benefits />
-            <BookingForm preselectedService={selectedService} />
             <Gallery />
             <Contact />
           </>
         )}
       </main>
-      <Footer apiStatus={apiStatus} isAdminView={isAdminView} />
+      <Footer apiStatus={apiStatus} />
     </>
   )
+}
+
+function getViewFromHash() {
+  if (window.location.hash === '#administracion') return 'admin'
+  if (window.location.hash === '#reservar') return 'booking'
+  return 'site'
 }

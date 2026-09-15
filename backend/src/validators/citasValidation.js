@@ -3,6 +3,7 @@ import { ALLOWED_SERVICES, ALLOWED_STATUSES } from '../config/services.js'
 const editableFields = [
   'nombre_cliente',
   'telefono',
+  'correo_cliente',
   'servicio',
   'fecha_cita',
   'hora_cita',
@@ -36,6 +37,10 @@ function validateField(field, value) {
     return 'El teléfono debe contener exactamente 10 dígitos.'
   }
 
+  if (field === 'correo_cliente' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+    return 'Ingresa un correo electrónico válido.'
+  }
+
   if (field === 'servicio' && !ALLOWED_SERVICES.includes(value.trim())) {
     return 'Selecciona un servicio válido.'
   }
@@ -57,11 +62,12 @@ function validateField(field, value) {
 
 function cleanFieldValue(field, value) {
   const cleaned = value.trim()
+  if (field === 'correo_cliente') return cleaned.toLowerCase()
   return field === 'hora_cita' ? cleaned.slice(0, 5) : cleaned
 }
 
 export function validateNewAppointment(input = {}) {
-  const requiredFields = ['nombre_cliente', 'telefono', 'servicio', 'fecha_cita', 'hora_cita']
+  const requiredFields = ['nombre_cliente', 'telefono', 'correo_cliente', 'servicio', 'fecha_cita', 'hora_cita']
   const errors = {}
   const data = {}
 

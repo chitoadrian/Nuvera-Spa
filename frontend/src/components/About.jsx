@@ -32,10 +32,9 @@ export default function About() {
               <li key={feature}><span><Icon name="check" size={16} /></span>{feature}</li>
             ))}
           </ul>
-          <a className="text-button" href="#reservas">Conoce tu próximo ritual <Icon name="arrow" size={17} /></a>
+          <a className="text-button" href="#reservar">Conoce tu próximo ritual <Icon name="arrow" size={17} /></a>
         </div>
       </div>
     </section>
   )
 }
-

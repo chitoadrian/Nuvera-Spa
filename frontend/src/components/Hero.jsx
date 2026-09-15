@@ -20,7 +20,7 @@ export default function Hero() {
           <h1 id="hero-title">Tu bienestar<br /><em>comienza aquí</em></h1>
           <p>Descubre un espacio creado para relajarte, renovarte y cuidar de ti en el corazón de Guayaquil.</p>
           <div className="hero__actions">
-            <a className="button button--primary" href="#reservas">Reservar cita <Icon name="arrow" size={18} /></a>
+            <a className="button button--primary" href="#reservar">Reservar cita <Icon name="arrow" size={18} /></a>
             <a className="button button--ghost" href="#servicios">Ver servicios</a>
           </div>
         </div>
@@ -41,4 +41,3 @@ export default function Hero() {
     </section>
   )
 }
-

@@ -7,6 +7,7 @@ import SectionHeading from './SectionHeading.jsx'
 const emptyForm = {
   name: '',
   phone: '',
+  email: '',
   service: '',
   date: '',
   time: '',
@@ -28,6 +29,9 @@ function validate(form) {
   if (!form.phone) errors.phone = 'Ingresa tu número de teléfono.'
   else if (!/^0\d{9}$/.test(form.phone)) errors.phone = 'Usa 10 dígitos y comienza con 0.'
 
+  if (!form.email.trim()) errors.email = 'Ingresa tu correo electrónico.'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = 'Ingresa un correo electrónico válido.'
+
   if (!form.service) errors.service = 'Selecciona un servicio.'
   if (!form.date) errors.date = 'Selecciona una fecha.'
   else if (form.date < getToday()) errors.date = 'Selecciona una fecha desde hoy en adelante.'
@@ -35,7 +39,7 @@ function validate(form) {
   return errors
 }
 
-export default function BookingForm({ preselectedService, onCreated }) {
+export default function BookingForm({ preselectedService, onCreated, standalone = false }) {
   const [form, setForm] = useState(emptyForm)
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
@@ -75,7 +79,7 @@ export default function BookingForm({ preselectedService, onCreated }) {
     event.preventDefault()
     const validationErrors = validate(form)
     setErrors(validationErrors)
-    setTouched({ name: true, phone: true, service: true, date: true, time: true })
+    setTouched({ name: true, phone: true, email: true, service: true, date: true, time: true })
 
     if (Object.keys(validationErrors).length > 0) return
 
@@ -86,6 +90,7 @@ export default function BookingForm({ preselectedService, onCreated }) {
       const response = await createCita({
         nombre_cliente: form.name.trim(),
         telefono: form.phone,
+        correo_cliente: form.email.trim().toLowerCase(),
         servicio: form.service,
         fecha_cita: form.date,
         hora_cita: form.time,
@@ -111,7 +116,7 @@ export default function BookingForm({ preselectedService, onCreated }) {
   }
 
   return (
-    <section id="reservas" className="section booking-section">
+    <section id="reservar" className={`section booking-section ${standalone ? 'booking-section--standalone' : ''}`}>
       <div className="booking-glow" aria-hidden="true" />
       <div className="container">
         <SectionHeading
@@ -165,6 +170,23 @@ export default function BookingForm({ preselectedService, onCreated }) {
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
                 />
                 {touched.phone && errors.phone && <small id="phone-error">{errors.phone}</small>}
+              </label>
+
+              <label className={`${fieldClass('email')} form-field--wide`}>
+                <span>Correo electrónico</span>
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="nombre@correo.com"
+                  value={form.email}
+                  onChange={updateField}
+                  onBlur={markTouched}
+                  aria-invalid={Boolean(touched.email && errors.email)}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                  required
+                />
+                {touched.email && errors.email && <small id="email-error">{errors.email}</small>}
               </label>
 
               <label className={`${fieldClass('service')} form-field--wide`}>

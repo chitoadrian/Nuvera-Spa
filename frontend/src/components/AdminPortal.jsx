@@ -4,6 +4,7 @@ import { getSupabaseBrowserClient } from '../services/supabaseAuth.js'
 import AdminLogin from './AdminLogin.jsx'
 import Icon from './Icon.jsx'
 import ReservationsManager from './ReservationsManager.jsx'
+import nuveraLogo from '../assets/nuvera-logo.png'
 
 function sortAppointments(appointments) {
   return [...appointments].sort((first, second) => {
@@ -93,27 +94,64 @@ function AdminDashboard({ session, onLogout }) {
     }
   }
 
+  const stats = {
+    total: appointments.length,
+    pendientes: appointments.filter(({ estado }) => estado === 'Pendiente').length,
+    confirmadas: appointments.filter(({ estado }) => estado === 'Confirmada').length,
+    canceladas: appointments.filter(({ estado }) => estado === 'Cancelada').length,
+    ingresos: appointments
+      .filter(({ estado }) => estado === 'Confirmada')
+      .reduce((total, { precio_estimado }) => total + Number(precio_estimado || 0), 0),
+  }
+
   return (
-    <>
-      <div className="admin-toolbar container">
-        <div>
+    <div className="admin-dashboard">
+      <aside className="admin-sidebar">
+        <a className="admin-sidebar__brand" href="#inicio" aria-label="Nuvéra Spa, volver al sitio">
+          <img src={nuveraLogo} alt="Nuvéra Spa" />
+        </a>
+        <nav aria-label="Navegación administrativa">
+          <a href="#resumen-admin"><Icon name="sparkle" size={19} /> Resumen</a>
+          <a href="#gestion-reservas"><Icon name="calendar" size={19} /> Reservas</a>
+        </nav>
+        <div className="admin-sidebar__session">
           <span>Sesión administrativa</span>
           <strong>{session.user.email}</strong>
+          <button type="button" onClick={onLogout}><Icon name="logout" size={18} /> Cerrar sesión</button>
         </div>
-        <button className="button button--outline" type="button" onClick={onLogout}>Cerrar sesión</button>
+      </aside>
+
+      <div className="admin-dashboard__content">
+        <header id="resumen-admin" className="admin-dashboard__header">
+          <div>
+            <p className="eyebrow">Panel privado</p>
+            <h1>Agenda Nuvéra</h1>
+            <p>Consulta el estado actual de las citas y gestiona cada solicitud.</p>
+          </div>
+          <a className="admin-dashboard__site-link" href="#inicio"><Icon name="arrow" size={18} /> Ver sitio</a>
+        </header>
+
+        <section className="admin-stats" aria-label="Resumen de reservas">
+          <article><span>Total de citas</span><strong>{stats.total}</strong></article>
+          <article><span>Pendientes</span><strong>{stats.pendientes}</strong></article>
+          <article><span>Confirmadas</span><strong>{stats.confirmadas}</strong></article>
+          <article><span>Canceladas</span><strong>{stats.canceladas}</strong></article>
+          <article><span>Ingresos confirmados</span><strong>${stats.ingresos.toFixed(0)}</strong></article>
+        </section>
+
+        <ReservationsManager
+          appointments={appointments}
+          status={status}
+          error={error}
+          activeAction={activeAction}
+          message={message}
+          onRetry={() => loadAppointments()}
+          onStatusChange={changeAppointmentStatus}
+          onDelete={removeAppointment}
+          onDismissMessage={() => setMessage(null)}
+        />
       </div>
-      <ReservationsManager
-        appointments={appointments}
-        status={status}
-        error={error}
-        activeAction={activeAction}
-        message={message}
-        onRetry={() => loadAppointments()}
-        onStatusChange={changeAppointmentStatus}
-        onDelete={removeAppointment}
-        onDismissMessage={() => setMessage(null)}
-      />
-    </>
+    </div>
   )
 }
 
@@ -180,11 +218,15 @@ export default function AdminPortal() {
   }
 
   return (
-    <div className="admin-page">
-      <a className="admin-back-link" href="#inicio"><Icon name="arrow" size={18} /> Volver al sitio</a>
+    <div className={`admin-page ${session ? 'admin-page--dashboard' : ''}`}>
       {session
         ? <AdminDashboard session={session} onLogout={logout} />
-        : <AdminLogin configurationError={configurationError} onLogin={login} />}
+        : (
+          <>
+            <a className="admin-back-link" href="#inicio"><Icon name="arrow" size={18} /> Volver al sitio</a>
+            <AdminLogin configurationError={configurationError} onLogin={login} />
+          </>
+        )}
     </div>
   )
 }
