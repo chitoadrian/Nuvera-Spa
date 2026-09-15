@@ -10,7 +10,7 @@ const navLinks = [
   { label: 'Contacto', href: '#contacto' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ isAdminView }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -27,7 +27,7 @@ export default function Navbar() {
   }, [isOpen])
 
   return (
-    <header className={`navbar ${isScrolled ? 'navbar--scrolled' : ''}`}>
+    <header className={`navbar ${isScrolled || isAdminView ? 'navbar--scrolled' : ''}`}>
       <div className="navbar__inner container">
         <a className="brand brand--image" href="#inicio" aria-label="Nuvéra Spa, ir al inicio" onClick={() => setIsOpen(false)}>
           <img className="brand__logo" src={nuveraLogo} alt="Nuvéra Spa" width="1024" height="559" />
@@ -55,6 +55,7 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          <a className="nav-admin" href="#administracion" onClick={() => setIsOpen(false)}>Administración</a>
         </nav>
       </div>
     </header>

@@ -78,11 +78,13 @@ export default function ReservationsManager({
               <thead>
                 <tr>
                   <th>Cliente</th>
+                  <th>Teléfono</th>
                   <th>Servicio</th>
                   <th>Fecha</th>
                   <th>Hora</th>
                   <th>Precio</th>
                   <th>Estado</th>
+                  <th>Cabina</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -92,11 +94,13 @@ export default function ReservationsManager({
                   return (
                     <tr key={appointment.id}>
                       <td data-label="Cliente"><strong>{appointment.nombre_cliente}</strong></td>
+                      <td data-label="Teléfono"><a className="reservation-phone" href={`tel:${appointment.telefono}`}>{appointment.telefono}</a></td>
                       <td data-label="Servicio">{appointment.servicio}</td>
                       <td data-label="Fecha">{formatDate(appointment.fecha_cita)}</td>
                       <td data-label="Hora">{appointment.hora_cita?.slice(0, 5)}</td>
                       <td data-label="Precio" className="reservation-price">{formatPrice(appointment.precio_estimado)}</td>
                       <td data-label="Estado"><StatusBadge status={appointment.estado} /></td>
+                      <td data-label="Cabina">{appointment.cabina || '—'}</td>
                       <td data-label="Acciones">
                         <div className="reservation-actions">
                           <button

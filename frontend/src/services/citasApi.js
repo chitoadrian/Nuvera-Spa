@@ -10,11 +10,13 @@ export class ApiError extends Error {
 }
 
 async function apiRequest(path, options = {}) {
+  const { accessToken, ...fetchOptions } = options
   const response = await fetch(`${API_URL}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...fetchOptions.headers,
     },
   })
 
@@ -27,8 +29,8 @@ async function apiRequest(path, options = {}) {
   return body
 }
 
-export function getCitas(signal) {
-  return apiRequest('/citas', { signal })
+export function getCitas(accessToken, signal) {
+  return apiRequest('/citas', { accessToken, signal })
 }
 
 export function createCita(appointment) {
@@ -38,13 +40,14 @@ export function createCita(appointment) {
   })
 }
 
-export function updateCita(id, changes) {
+export function updateCita(id, changes, accessToken) {
   return apiRequest(`/citas/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(changes),
+    accessToken,
   })
 }
 
-export function deleteCita(id) {
-  return apiRequest(`/citas/${id}`, { method: 'DELETE' })
+export function deleteCita(id, accessToken) {
+  return apiRequest(`/citas/${id}`, { method: 'DELETE', accessToken })
 }

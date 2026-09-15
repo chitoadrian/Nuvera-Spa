@@ -20,7 +20,7 @@ const apiLabels = {
   offline: 'API local desconectada',
 }
 
-export default function Footer({ apiStatus }) {
+export default function Footer({ apiStatus, isAdminView }) {
   return (
     <footer className="footer">
       <div className="footer__main container">
@@ -29,6 +29,7 @@ export default function Footer({ apiStatus }) {
         </a>
         <nav className="footer__nav" aria-label="Navegación del pie de página">
           {footerLinks.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
+          {!isAdminView && <a className="footer__admin-link" href="#administracion">Administración</a>}
         </nav>
         <div className="footer__social" aria-label="Redes sociales">
           {socialLinks.map(([label, icon]) => (

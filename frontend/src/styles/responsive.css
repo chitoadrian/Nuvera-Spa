@@ -107,6 +107,11 @@
     font-size: 0.95rem;
   }
 
+  .navbar__nav .nav-admin {
+    font-family: var(--sans);
+    font-size: 0.9rem !important;
+  }
+
   .hero {
     min-height: max(680px, 100svh);
   }
@@ -169,6 +174,7 @@
   .reservations-table,
   .reservations-table tbody {
     display: block;
+    min-width: 0;
   }
 
   .reservations-table thead {
@@ -364,6 +370,33 @@
 
   .manager-message {
     align-items: flex-start;
+  }
+
+  .admin-page {
+    padding-top: 96px;
+  }
+
+  .admin-back-link {
+    margin-left: 20px;
+  }
+
+  .admin-login-card {
+    width: min(calc(100% - 28px), 470px);
+    margin-top: 38px;
+    padding: 34px 23px;
+  }
+
+  .admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-toolbar .button {
+    width: 100%;
+  }
+
+  .admin-page .reservations-section {
+    padding-top: 58px;
   }
 
   .reservations-table tr {
