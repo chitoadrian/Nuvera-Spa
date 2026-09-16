@@ -70,14 +70,24 @@ export default function BookingForm({ preselectedService, onCreated, standalone 
   }
 
   function markTouched(event) {
-    const field = event.target.name
+    const { name: field, value } = event.target
+    const nextValue = field === 'phone' ? value.replace(/\D/g, '').slice(0, 10) : value
+    const nextForm = { ...form, [field]: nextValue }
+    setForm(nextForm)
     setTouched((current) => ({ ...current, [field]: true }))
-    setErrors(validate(form))
+    setErrors(validate(nextForm))
   }
 
   async function submitBooking(event) {
     event.preventDefault()
-    const validationErrors = validate(form)
+    const formData = new FormData(event.currentTarget)
+    const submittedEmail = String(formData.get('email') || '').trim()
+    const submittedForm = {
+      ...form,
+      email: submittedEmail || form.email,
+    }
+    const validationErrors = validate(submittedForm)
+    setForm(submittedForm)
     setErrors(validationErrors)
     setTouched({ name: true, phone: true, email: true, service: true, date: true, time: true })
 
@@ -88,12 +98,12 @@ export default function BookingForm({ preselectedService, onCreated, standalone 
 
     try {
       const response = await createCita({
-        nombre_cliente: form.name.trim(),
-        telefono: form.phone,
-        correo_cliente: form.email.trim().toLowerCase(),
-        servicio: form.service,
-        fecha_cita: form.date,
-        hora_cita: form.time,
+        nombre_cliente: submittedForm.name.trim(),
+        telefono: submittedForm.phone,
+        correo_cliente: submittedForm.email.trim().toLowerCase(),
+        servicio: submittedForm.service,
+        fecha_cita: submittedForm.date,
+        hora_cita: submittedForm.time,
       })
 
       onCreated?.(response.data)
@@ -181,6 +191,7 @@ export default function BookingForm({ preselectedService, onCreated, standalone 
                   placeholder="nombre@correo.com"
                   value={form.email}
                   onChange={updateField}
+                  onInput={updateField}
                   onBlur={markTouched}
                   aria-invalid={Boolean(touched.email && errors.email)}
                   aria-describedby={errors.email ? 'email-error' : undefined}

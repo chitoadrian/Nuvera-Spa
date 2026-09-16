@@ -55,8 +55,8 @@ async function notifySafely(sendNotification, context) {
     return result
   } catch (error) {
     const providerDetails = error.name === 'EmailProviderError'
-      ? `status=${error.status} code=${error.providerCode} message=${error.providerMessage}`
-      : error.message
+      ? `EMAIL_PROVIDER_ERROR provider=${error.provider} status=${error.status} code=${error.providerCode} message=${error.providerMessage}`
+      : 'EMAIL_PROVIDER_ERROR provider=unknown status=unknown code=INTERNAL_ERROR'
     console.error(`No se pudo enviar la notificación de correo: ${context}`, providerDetails)
     return { delivered: false, skipped: false }
   }

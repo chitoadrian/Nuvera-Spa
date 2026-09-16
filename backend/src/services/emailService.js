@@ -1,15 +1,24 @@
 import { randomUUID } from 'node:crypto'
+import nodemailer from 'nodemailer'
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
+const GMAIL_SMTP_HOST = 'smtp.gmail.com'
+const GMAIL_SMTP_PORT = 465
 
 export class EmailProviderError extends Error {
-  constructor(status, providerCode, providerMessage) {
-    super(`EMAIL_PROVIDER_${status}`)
+  constructor(provider, status, providerCode, providerMessage) {
+    super('EMAIL_PROVIDER_ERROR')
     this.name = 'EmailProviderError'
-    this.status = status
-    this.providerCode = providerCode || 'unknown'
+    this.provider = provider
+    this.status = status || 'unknown'
+    this.providerCode = sanitizeProviderCode(providerCode)
     this.providerMessage = sanitizeProviderMessage(providerMessage)
   }
+}
+
+function sanitizeProviderCode(code) {
+  if (typeof code !== 'string' || !/^[A-Z0-9_-]{1,60}$/i.test(code)) return 'unknown'
+  return code
 }
 
 function sanitizeProviderMessage(message) {
@@ -17,16 +26,29 @@ function sanitizeProviderMessage(message) {
 
   return message
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[correo oculto]')
-    .replace(/\b(?:re|sb_secret)_[A-Za-z0-9_-]+\b/g, '[credencial oculta]')
+    .replace(/\b(?:re|sb_secret)_[A-Za-z0-9_-]+\b/gi, '[credencial oculta]')
+    .replace(/\b(?:pass(?:word)?|token|secret|authorization)\s*[=:]\s*\S+/gi, '$1=[credencial oculta]')
     .slice(0, 500)
 }
 
 function getEmailConfiguration() {
-  const apiKey = process.env.RESEND_API_KEY?.trim()
+  const smtpUser = process.env.SMTP_USER?.trim()
+  const smtpAppPassword = process.env.SMTP_APP_PASSWORD?.replace(/\s+/g, '')
   const from = process.env.EMAIL_FROM?.trim()
+  const hasAnySmtpValue = Boolean(smtpUser || smtpAppPassword)
 
-  if (!apiKey || !from) return null
-  return { apiKey, from }
+  if (smtpUser && smtpAppPassword && from) {
+    return { provider: 'gmail-smtp', smtpUser, smtpAppPassword, from }
+  }
+
+  if (hasAnySmtpValue) {
+    return { provider: 'gmail-smtp', invalid: true }
+  }
+
+  const apiKey = process.env.RESEND_API_KEY?.trim()
+  if (apiKey && from) return { provider: 'resend', apiKey, from }
+
+  return null
 }
 
 function escapeHtml(value) {
@@ -73,31 +95,88 @@ function emailLayout({ heading, introduction, appointment }) {
   </body></html>`
 }
 
-async function sendEmail({ to, subject, html, idempotencyKey }) {
-  const configuration = getEmailConfiguration()
-  if (!configuration) return { delivered: false, skipped: true }
+async function sendWithGmailSmtp(configuration, message) {
+  const transporter = nodemailer.createTransport({
+    host: GMAIL_SMTP_HOST,
+    port: GMAIL_SMTP_PORT,
+    secure: true,
+    auth: {
+      user: configuration.smtpUser,
+      pass: configuration.smtpAppPassword,
+    },
+    logger: false,
+    debug: false,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+  })
 
+  try {
+    await transporter.sendMail({
+      from: configuration.from,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+    })
+  } catch (error) {
+    throw new EmailProviderError(
+      'gmail-smtp',
+      error.responseCode,
+      error.code || error.command,
+      error.response || error.message,
+    )
+  }
+
+  return { delivered: true, skipped: false, provider: 'gmail-smtp' }
+}
+
+async function sendWithResend(configuration, message) {
   const response = await fetch(RESEND_ENDPOINT, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${configuration.apiKey}`,
       'Content-Type': 'application/json',
-      'Idempotency-Key': idempotencyKey,
+      'Idempotency-Key': message.idempotencyKey,
       'User-Agent': 'Nuvera-Spa/1.0',
     },
-    body: JSON.stringify({ from: configuration.from, to: [to], subject, html }),
+    body: JSON.stringify({
+      from: configuration.from,
+      to: [message.to],
+      subject: message.subject,
+      html: message.html,
+    }),
   })
 
   if (!response.ok) {
     const providerError = await response.json().catch(() => ({}))
     throw new EmailProviderError(
+      'resend',
       response.status,
       providerError.name,
       providerError.message,
     )
   }
 
-  return { delivered: true, skipped: false }
+  return { delivered: true, skipped: false, provider: 'resend' }
+}
+
+async function sendEmail(message) {
+  const configuration = getEmailConfiguration()
+  if (!configuration) return { delivered: false, skipped: true }
+
+  if (configuration.invalid) {
+    throw new EmailProviderError(
+      'gmail-smtp',
+      'configuration',
+      'SMTP_CONFIGURATION',
+      'Faltan variables SMTP requeridas.',
+    )
+  }
+
+  if (configuration.provider === 'gmail-smtp') {
+    return sendWithGmailSmtp(configuration, message)
+  }
+
+  return sendWithResend(configuration, message)
 }
 
 export function sendNewAppointmentEmail(appointment) {
