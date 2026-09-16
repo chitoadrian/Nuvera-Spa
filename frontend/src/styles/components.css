@@ -1350,11 +1350,17 @@
 
 /* Administrative workspace */
 .admin-page--dashboard {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding-top: 84px;
 }
 
 .admin-dashboard {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: calc(100vh - 84px);
   grid-template-columns: 260px minmax(0, 1fr);
   background: #f5f3ed;
@@ -1385,8 +1391,11 @@
 }
 
 .admin-sidebar__brand img {
+  display: block;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   object-position: center;
 }
@@ -1454,6 +1463,8 @@
 }
 
 .admin-dashboard__content {
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   padding: 48px clamp(24px, 4vw, 64px) 70px;
 }
