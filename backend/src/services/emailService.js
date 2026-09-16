@@ -2,6 +2,25 @@ import { randomUUID } from 'node:crypto'
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 
+export class EmailProviderError extends Error {
+  constructor(status, providerCode, providerMessage) {
+    super(`EMAIL_PROVIDER_${status}`)
+    this.name = 'EmailProviderError'
+    this.status = status
+    this.providerCode = providerCode || 'unknown'
+    this.providerMessage = sanitizeProviderMessage(providerMessage)
+  }
+}
+
+function sanitizeProviderMessage(message) {
+  if (!message || typeof message !== 'string') return 'El proveedor rechazó el envío.'
+
+  return message
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[correo oculto]')
+    .replace(/\b(?:re|sb_secret)_[A-Za-z0-9_-]+\b/g, '[credencial oculta]')
+    .slice(0, 500)
+}
+
 function getEmailConfiguration() {
   const apiKey = process.env.RESEND_API_KEY?.trim()
   const from = process.env.EMAIL_FROM?.trim()
@@ -64,12 +83,18 @@ async function sendEmail({ to, subject, html, idempotencyKey }) {
       Authorization: `Bearer ${configuration.apiKey}`,
       'Content-Type': 'application/json',
       'Idempotency-Key': idempotencyKey,
+      'User-Agent': 'Nuvera-Spa/1.0',
     },
     body: JSON.stringify({ from: configuration.from, to: [to], subject, html }),
   })
 
   if (!response.ok) {
-    throw new Error(`EMAIL_PROVIDER_${response.status}`)
+    const providerError = await response.json().catch(() => ({}))
+    throw new EmailProviderError(
+      response.status,
+      providerError.name,
+      providerError.message,
+    )
   }
 
   return { delivered: true, skipped: false }

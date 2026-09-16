@@ -54,7 +54,10 @@ async function notifySafely(sendNotification, context) {
     if (result.skipped) console.info(`Notificación de correo omitida: ${context}`)
     return result
   } catch (error) {
-    console.error(`No se pudo enviar la notificación de correo: ${context}`, error.message)
+    const providerDetails = error.name === 'EmailProviderError'
+      ? `status=${error.status} code=${error.providerCode} message=${error.providerMessage}`
+      : error.message
+    console.error(`No se pudo enviar la notificación de correo: ${context}`, providerDetails)
     return { delivered: false, skipped: false }
   }
 }

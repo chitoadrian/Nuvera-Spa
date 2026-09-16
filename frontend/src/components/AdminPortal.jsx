@@ -166,20 +166,18 @@ export default function AdminPortal() {
 
     try {
       const supabase = getSupabaseBrowserClient()
-      supabase.auth.getSession().then(({ data, error }) => {
+      const authListener = supabase.auth.onAuthStateChange((event, nextSession) => {
         if (!active) return
-        if (error) setConfigurationError('No se pudo recuperar la sesión administrativa.')
-        setSession(data.session)
-        setStatus('ready')
-      })
-
-      const authListener = supabase.auth.onAuthStateChange((_event, nextSession) => {
-        if (active) {
-          setSession(nextSession)
-          setStatus('ready')
-        }
+        if (event === 'SIGNED_IN') setSession(nextSession)
+        if (event === 'SIGNED_OUT') setSession(null)
       })
       subscription = authListener.data.subscription
+
+      supabase.auth.signOut({ scope: 'local' }).finally(() => {
+        if (!active) return
+        setSession(null)
+        setStatus('ready')
+      })
     } catch (error) {
       setConfigurationError(error.message)
       setStatus('ready')

@@ -171,11 +171,17 @@
 
   .admin-page--dashboard {
     padding-top: 74px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   .admin-dashboard {
     display: block;
+    width: 100%;
+    max-width: 100%;
     min-height: calc(100vh - 74px);
+    overflow-x: clip;
   }
 
   .admin-sidebar {
@@ -185,17 +191,21 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 24px;
+    width: 100%;
+    max-width: 100%;
     padding: 18px;
   }
 
   .admin-sidebar__brand {
-    width: 104px;
-    height: 60px;
+    width: 112px;
+    height: 64px;
     margin: 0;
+    padding: 5px;
   }
 
   .admin-sidebar__brand img {
-    width: 164px;
+    width: 100%;
+    height: 100%;
   }
 
   .admin-sidebar nav {
@@ -218,12 +228,17 @@
   }
 
   .admin-dashboard__content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     padding: 38px 24px 60px;
   }
 
-  .reservations-table,
-  .reservations-table tbody {
+  .admin-dashboard .reservations-table,
+  .admin-dashboard .reservations-table tbody {
     display: block;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
   }
 
@@ -237,6 +252,9 @@
 
   .reservations-table tr {
     display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     margin-bottom: 18px;
     padding: 12px 18px;
     border: 1px solid rgba(23, 60, 52, 0.09);
@@ -255,6 +273,15 @@
     padding: 11px 0;
     border-bottom: 1px solid rgba(23, 60, 52, 0.07);
     text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-dashboard .reservations-section,
+  .admin-dashboard .reservations-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
   }
 
   .reservations-table td::before {
@@ -449,10 +476,20 @@
 
   .admin-sidebar {
     grid-template-columns: 1fr auto;
+    gap: 12px 18px;
   }
 
   .admin-sidebar__brand {
-    display: none;
+    display: grid;
+    width: 92px;
+    height: 54px;
+  }
+
+  .admin-sidebar nav {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    width: 100%;
   }
 
   .admin-sidebar nav a {
@@ -485,8 +522,23 @@
     grid-column: 1 / -1;
   }
 
+  .reservations-section__heading {
+    align-items: flex-start;
+  }
+
   .reservations-table tr {
     padding: 10px 15px;
+  }
+
+  .reservations-table th,
+  .reservations-table td,
+  .reservations-table tbody tr:last-child td {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .reservations-table td > :last-child {
+    min-width: 0;
   }
 
   .reservation-actions {
